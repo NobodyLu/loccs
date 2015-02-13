@@ -7,13 +7,14 @@ import java.util.Vector;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -34,6 +35,7 @@ public class DocumentIndexWriter {
 		try {
 			Directory dir = FSDirectory.open(new File(directory));
 			IndexWriterConfig config = new IndexWriterConfig(Version.LATEST, analyzer);
+			config.setOpenMode(OpenMode.CREATE);
 			IndexWriter writer = new IndexWriter(dir, config);
 			Vector<String> filenames = collection.refreshDocuments(glob);
 			for (int i = 0; i < filenames.size(); i++) 
@@ -75,7 +77,7 @@ public class DocumentIndexWriter {
 		DocumentIndexWriter writer = new DocumentIndexWriter();
 		writer.setIndexDirectory("D:\\Source Code\\loccs\\data\\index\\news");
 		
-		writer.build(collection, "*.*", new StandardAnalyzer());
+		writer.build(collection, "*.*", new SimpleAnalyzer());
 	}
 
 }
