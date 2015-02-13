@@ -1,13 +1,15 @@
 package org.loccs.document;
 
-
-import java.util.HashMap;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Vector;
 
 public class DocumentCollection {
 	
 	protected Vector<String> paths = new Vector<String>();
-	protected HashMap<Integer, String> documents = new HashMap<Integer, String>();
 	
 	public DocumentCollection() {
 		
@@ -23,14 +25,38 @@ public class DocumentCollection {
 		return (Vector<String>) paths.clone();
 	}
 	
-	public void refreshDocuments() {
-		documents.clear();
+	public Vector<String> refreshDocuments(String glob) {
+		Vector<String> documents = new Vector<String>();
 		
+		for (int i = 0; i < paths.size(); i++) {
+			Path path = Paths.get(paths.get(i));
+			
+			try {
+				DirectoryStream<Path> stream = Files.newDirectoryStream(path, glob);
+				for (Path file: stream) {
+					documents.add(file.toString());
+				}
+			} catch (IOException e) {
+				System.out.println("DocumentCollection: Fail to refresh path " + paths.get(i));
+				e.printStackTrace();
+			}
+		}
+		
+		return documents;
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		DocumentCollection collection = new DocumentCollection();
+		
+		collection.addPath("D:\\Source Code\\test_data\\documents\\news");
+		
+		Vector<String> documents = collection.refreshDocuments("T*.txt");
+		
+		System.out.println("Documents count: " + documents.size());
+		
+		for (int i = 0; i < documents.size(); i++)
+			System.out.println("File " + (i + 1) + ": " + documents.get(i));
+		
 	}
 
 }
