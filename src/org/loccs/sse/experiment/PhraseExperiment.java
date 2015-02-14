@@ -11,8 +11,8 @@ import org.loccs.document.DocumentIndexWriter;
 
 public class PhraseExperiment {
 	
-	protected String documentDirectory = "D:\\Source Code\\loccs\\data\\documents\\news";
-	protected String indexDirectory = "D:\\Source Code\\loccs\\data\\index\\news";
+	protected String documentDirectory = "D:\\Source Code\\loccs\\data\\documents\\rfc1000";
+	protected String indexDirectory = "D:\\Source Code\\loccs\\data\\index\\rfc1000";
 	
 	protected Analyzer analyzer = new SimpleAnalyzer();
 	
@@ -118,7 +118,8 @@ public class PhraseExperiment {
 		
 		System.out.println("Total length <= " + base + " phrase " + totalLengthBasePhraseCount);
 		System.out.println("Total ok phrase " + totalOkCount + ", save " + (totalOkCount - totalLengthBasePhraseCount));
-		System.out.println("Total fail phrase " + totalFailCount);		
+		System.out.println("Total fail phrase " + totalFailCount);	
+		System.out.println("");
 	}
 	
 	protected String constructPhrase(Vector<String> phrase, int start, int length) {
