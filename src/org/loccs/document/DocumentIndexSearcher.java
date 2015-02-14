@@ -93,16 +93,13 @@ public class DocumentIndexSearcher {
 		return results;
 	}
 	
-	public Vector<String> searchPhrase(String[] phrase) {
+	public Vector<String> searchPhrase(Vector<String> phrase, int start, int length) {
+		
 		Vector<String> results = new Vector<String>();
 		
-		String full = "";
-		
 		PhraseQuery query = new PhraseQuery();
-		for (int i = 0; i < phrase.length; i++) {
-			query.add(new Term("content", phrase[i].toLowerCase()));
-			full = full + phrase[i] + " ";
-		}
+		for (int i = start; i < (start + length); i++)
+			query.add(new Term("content", phrase.get(i)));
 		
 		try {
 			TopDocs docs = searcher.search(query, reader.numDocs());
@@ -111,11 +108,29 @@ public class DocumentIndexSearcher {
 				results.add(document.get("filename"));
 			}
 		} catch (IOException e) {
-			System.out.println("DocumentIndexSearcher: Fail to search phrase " + full);
+			System.out.println("DocumentIndexSearcher: Fail to search phrase " + 
+					constructPhrase(phrase, start, length));
 			e.printStackTrace();
 		}		
 		
 		return results;
+	}
+	
+	public int getDocumentCountContainsPhrase(Vector<String> phrase, int start, int length) {
+		
+		PhraseQuery query = new PhraseQuery();
+		for (int i = start; i < (start + length); i++) 
+			query.add(new Term("content", phrase.get(i)));
+		
+		try {
+			TopDocs docs = searcher.search(query, reader.numDocs());
+			return docs.scoreDocs.length;
+		} catch (IOException e) {
+			System.out.println("DocumentIndexSearcher: Fail to search phrase " + 
+					constructPhrase(phrase, start, length));
+			e.printStackTrace();
+			return 0;
+		}
 	}
 	
 	public Vector<String> getDocumentWords(Analyzer analyzer, int doc) {
@@ -129,6 +144,7 @@ public class DocumentIndexSearcher {
 			while (stream.incrementToken()) {
 				words.add(charTermAttribute.toString());
 			}
+			stream.close();
 			
 		} catch (IOException e) {
 			System.out.println("DocumentIndexSearcher: Fail to get document words.");
@@ -150,6 +166,15 @@ public class DocumentIndexSearcher {
 				e.printStackTrace();
 			}
 	}
+	
+	protected String constructPhrase(Vector<String> phrase, int start, int length) {
+		String full = "";
+		
+		for (int i = start; i < (start + length); i++)
+			full = full + phrase.get(i) + " ";
+		
+		return full;
+	}
 
 	public static void main(String[] args) {
 		DocumentIndexSearcher searcher = new DocumentIndexSearcher();
@@ -167,10 +192,10 @@ public class DocumentIndexSearcher {
 			System.out.println(results.get(i));
 		System.out.println("");
 		
-		String[] phrase = new String[2];
-		phrase[0] = "were";
-		phrase[1] = "also";
-		results = searcher.searchPhrase(phrase);
+		Vector<String> phrase = new Vector<String>();
+		phrase.add("were");
+		phrase.add("also");
+		results = searcher.searchPhrase(phrase, 0, 2);
 		System.out.println("Results count: " + results.size());
 		for (int i = 0; i < results.size(); i++)
 			System.out.println(results.get(i));		
