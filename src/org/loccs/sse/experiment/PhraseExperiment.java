@@ -1,6 +1,9 @@
 package org.loccs.sse.experiment;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -11,17 +14,28 @@ import org.loccs.document.DocumentIndexWriter;
 
 public class PhraseExperiment {
 	
-	protected String documentDirectory = "D:\\Source Code\\loccs\\data\\documents\\rfc1000";
-	protected String indexDirectory = "D:\\Source Code\\loccs\\data\\index\\rfc1000";
+	protected String documentDirectory = "D:\\Source Code\\loccs\\data\\documents\\news";
+	protected String indexDirectory = "D:\\Source Code\\loccs\\data\\index\\news";
+	
+	protected static int MAX_PHRASE_LENGTH = 16;
 	
 	protected Analyzer analyzer = new SimpleAnalyzer();
+	
+	protected int[] phraseCounts = new int[MAX_PHRASE_LENGTH];
+	
+	List<Map<String, Integer>> phraseMaps = new ArrayList<Map<String, Integer>>();
+	
+	
 	
 	protected HashMap<String, Integer> phraseMap1 = new HashMap<String, Integer>();
 	protected HashMap<String, Integer> phraseMap2 = new HashMap<String, Integer>();
 	
 	
 	public PhraseExperiment() {
-		
+		for (int i = 2; i <= MAX_PHRASE_LENGTH; i++) {
+			Map<String, Integer> map = new HashMap<String, Integer>();
+			phraseMaps.add(map);
+		}
 	}
 	
 	public void buildIndex() {
@@ -120,6 +134,13 @@ public class PhraseExperiment {
 		System.out.println("Total ok phrase " + totalOkCount + ", save " + (totalOkCount - totalLengthBasePhraseCount));
 		System.out.println("Total fail phrase " + totalFailCount);	
 		System.out.println("");
+	}
+	
+	protected Map<String, Integer> getPhraseMap(int length) {
+		if ((length < 2) || (length > MAX_PHRASE_LENGTH))
+			return null;
+		
+		return phraseMaps.get(length - 2);
 	}
 	
 	protected String constructPhrase(Vector<String> phrase, int start, int length) {
