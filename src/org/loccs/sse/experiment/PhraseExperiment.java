@@ -157,7 +157,7 @@ public class PhraseExperiment {
 		
 		//experiment.buildIndex();
 		
-		experiment.SeperateAsWordsExperiment(2, 8);
+		experiment.SeperateAsWordsExperiment(2, 9);
 	}
 
 }
