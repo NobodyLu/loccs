@@ -2,8 +2,10 @@ package org.loccs.sse.experiment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -11,11 +13,17 @@ import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.loccs.document.DocumentCollection;
 import org.loccs.document.DocumentIndexSearcher;
 import org.loccs.document.DocumentIndexWriter;
+import org.loccs.office.spreadsheet.ApachePOIHSSF;
+import org.loccs.office.spreadsheet.Cell;
+import org.loccs.office.spreadsheet.Sheet;
+import org.loccs.office.spreadsheet.SpreadSheet;
 
 public class PhraseExperiment {
 	
-	protected String documentDirectory = "D:\\Source Code\\loccs\\data\\documents\\news";
-	protected String indexDirectory = "D:\\Source Code\\loccs\\data\\index\\news";
+	protected String documentDirectory = "D:\\Source Code\\loccs\\data\\documents\\rfc1000";
+	protected String indexDirectory = "D:\\Source Code\\loccs\\data\\index\\rfc1000";
+	
+	protected String statisticsFile = "D:\\Source Code\\loccs\\results\\document\\phrase\\statistics.xls";
 	
 	protected static int MAX_PHRASE_LENGTH = 16;
 	
@@ -46,6 +54,80 @@ public class PhraseExperiment {
 		writer.setIndexDirectory(indexDirectory);
 		
 		writer.build(collection, "*.*", analyzer);
+	}
+	
+	public void statistics(int sheet)  {
+		DocumentIndexSearcher searcher = new DocumentIndexSearcher();
+		if (!searcher.open(indexDirectory)) 
+			return;
+		
+		int n = searcher.getDocumentCount();
+		int block = n / 10;
+		int[] counts = new int[n];
+		
+		Set<String> phrases = new HashSet<String>();
+		
+		SpreadSheet spread = new ApachePOIHSSF();
+		if (!spread.open(statisticsFile)) {
+			System.out.println("Fail to open statistics file.");
+			return;
+		}
+		Sheet sheet1 = spread.getSheet(sheet);
+		Sheet sheet2 = spread.getSheet(sheet + 1);
+		
+		for (int i = 2; i <= MAX_PHRASE_LENGTH; i++) {
+			
+			System.out.println("Stat phrases of length " + i);
+			
+			Cell cell;
+			
+			for (int j = 1; j <= n; j++) {
+				cell = sheet2.getCell(j + 1, 1);
+				cell.setNumericValue(j);
+				counts[j - 1] = 0;
+				if (j % block == 0) {
+					cell = sheet1.getCell(1, j / block + 1);
+					cell.setNumericValue(j);
+				}
+			}
+			
+			phrases.clear();
+			cell = sheet1.getCell(i, 1);
+			cell.setNumericValue(i);
+			cell = sheet2.getCell(1, i);
+			cell.setNumericValue(i);
+			
+			for (int j = 1; j <= n; j++) {
+				Vector<String> words = searcher.getDocumentWords(analyzer, j - 1);
+				
+				int size = words.size();
+				
+				for (int k = 0; k <= (size - i); k++) {
+					String phrase = constructPhrase(words, k, i);
+					if (!phrases.contains(phrase)) {
+						phrases.add(phrase);
+						int count = searcher.getDocumentCountContainsPhrase(words, k, i);
+						if (count == 0)
+							System.out.println("Fail to find phrase: " + phrase);
+						else
+							counts[count - 1]++;
+					}
+				}
+				
+				if (j % block == 0) {
+					cell = sheet1.getCell(i, j / block + 1);
+					cell.setNumericValue(phrases.size());
+				}
+			}
+			
+			for (int j = 0; j < n; j++) {
+				cell = sheet2.getCell(j + 2, i);
+				cell.setNumericValue(counts[j]);
+			}
+		}
+		
+		spread.save();
+		spread.close();
 	}
 	
 	public void SeperateAsWordsExperiment(int base, int max) {
@@ -157,7 +239,7 @@ public class PhraseExperiment {
 		
 		//experiment.buildIndex();
 		
-		experiment.SeperateAsWordsExperiment(2, 9);
+		experiment.statistics(2);
 	}
 
 }
