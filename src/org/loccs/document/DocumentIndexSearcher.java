@@ -3,6 +3,8 @@ package org.loccs.document;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -86,6 +88,23 @@ public class DocumentIndexSearcher {
 				results.add(document.get("filename"));
 			}
 		} catch (IOException e) {
+			System.out.println("DocumentIndexSearcher: Fail to search word " + word);
+			e.printStackTrace();
+		}
+		
+		return results;
+	}
+	
+	public SortedSet<Integer> searchWordForDocID(String word) {
+		SortedSet<Integer> results = new TreeSet<Integer>();
+		
+		Query query = new TermQuery(new Term("content", word.toLowerCase()));
+		try {
+			TopDocs docs = searcher.search(query, reader.numDocs());
+			for (ScoreDoc doc : docs.scoreDocs) {
+				results.add(new Integer(doc.doc));
+			}
+		}catch (IOException e) {
 			System.out.println("DocumentIndexSearcher: Fail to search word " + word);
 			e.printStackTrace();
 		}
@@ -185,13 +204,19 @@ public class DocumentIndexSearcher {
 		
 		Vector<String> words = searcher.getAllWords();
 		System.out.println("Word count: " + words.size());
+		System.out.println("");
 		
-		Vector<String> results = searcher.searchWord("google");
+		String word = "google";
+		System.out.println("Search for word \"" + word +"\"");
+		Vector<String> results = searcher.searchWord(word);
 		System.out.println("Results count: " + results.size());
 		for (int i = 0; i < results.size(); i++)
 			System.out.println(results.get(i));
+		SortedSet<Integer> idresults = searcher.searchWordForDocID(word);
+		System.out.println("Docs id: " + idresults.toString());
 		System.out.println("");
 		
+		System.out.println("Search for phrase \"were also\"");
 		Vector<String> phrase = new Vector<String>();
 		phrase.add("were");
 		phrase.add("also");

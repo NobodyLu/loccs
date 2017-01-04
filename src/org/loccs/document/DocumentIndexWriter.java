@@ -32,13 +32,18 @@ public class DocumentIndexWriter {
 	}
 	
 	public boolean build(DocumentCollection collection, String glob, Analyzer analyzer) {
+		return build(collection, glob, analyzer, 100);
+	}
+	
+	public boolean build(DocumentCollection collection, String glob, Analyzer analyzer, int percentage) {
 		try {
 			Directory dir = FSDirectory.open(new File(directory));
 			IndexWriterConfig config = new IndexWriterConfig(Version.LATEST, analyzer);
 			config.setOpenMode(OpenMode.CREATE);
 			IndexWriter writer = new IndexWriter(dir, config);
 			Vector<String> filenames = collection.refreshDocuments(glob);
-			for (int i = 0; i < filenames.size(); i++) 
+			int count = filenames.size() * percentage / 100;
+			for (int i = 0; i < count; i++) 
 				addDocument(writer, filenames.get(i));
 			
 			writer.close();

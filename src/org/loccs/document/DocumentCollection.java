@@ -1,5 +1,6 @@
 package org.loccs.document;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -43,6 +44,19 @@ public class DocumentCollection {
 		}
 		
 		return documents;
+	}
+	
+	public int getTotalFileSize(int percentage) {
+		int size = 0;
+		
+		Vector<String> filenames = refreshDocuments("*.*");
+		int count = filenames.size() * percentage / 100;
+		for (int i = 0; i < count; i++) {
+			File file =new File(filenames.get(i));
+			size += file.length();
+		}
+		
+		return size;
 	}
 
 	public static void main(String[] args) {
