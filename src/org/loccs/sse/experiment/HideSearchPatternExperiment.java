@@ -74,6 +74,13 @@ public class HideSearchPatternExperiment {
 	}
 	
 	public void groupExperiment() {
+		SpreadSheet spread = new ApachePOIHSSF();
+		if (!spread.open(groupStatisticsFile)) {
+			System.out.println("Fail to open statistics file.");
+			return;
+		}
+		Sheet sheet = spread.getSheet(wordCountSheet);
+		
 		for (int i = 1; i <= 10; i++) {
 			buildIndex(i * 10);
 			DocumentIndexSearcher searcher = new DocumentIndexSearcher();
@@ -107,8 +114,22 @@ public class HideSearchPatternExperiment {
 					good += count;
 			}
 			
+			
+			Cell cell;
+			cell = sheet.getCell(1 + i, 1);
+			cell.setStringValue(Integer.toString(i * 10));
+			
+			cell = sheet.getCell(1 + i, 2);
+			cell.setStringValue(Integer.toString(groups.size()));
+			
+			cell = sheet.getCell(1 + i, 3);
+			cell.setStringValue(Integer.toString(good));
+			
 			System.out.println("Percentage " + i * 10 + ", group count: " + groups.size() + ", good count: " + good);
 		}
+		
+		spread.save();
+		spread.close();		
 	}
 
 	public static void main(String[] args) {
